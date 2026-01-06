@@ -5,17 +5,32 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [query, setQuery] = useState("batman");
 
-  useEffect(() => {
+ useEffect(() => {
     const controller = new AbortController();
-
-    fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=${query}`, {
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
-      .then((data) => data.Response === "True" && setMovies(data.Search))
-      .catch((err) => console.error(err));
-
-    return () => controller.abort();
+ 
+    // fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=${query}`, {
+    //   signal: controller.signal,
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => data.Response === "True" && setMovies(data.Search))
+    //   .catch((err) => console.error(err));
+ 
+    const fetchMovies = async () => {
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          { signal: controller.signal }
+        );
+        const data = await res.json();
+        data.Response === "True" && setMovies(data.Search);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+ 
+    fetchMovies();
+ 
+    return () => controller.abort(); // Cleanup on unmount or query change, aborting the fetch
   }, [query]);
 
   return (
